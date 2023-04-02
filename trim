@@ -1,0 +1,23 @@
+#!/bin/bash
+
+build_fmt() {
+	[ ! -d fmt ] && echo "fmtlib is not fetched" && return 1
+	export FMTBUILD="fmt/build"
+	cmake -S fmt/ -B $FMTBUILD
+	make -C $FMTBUILD
+}
+if [ ! -z $1 ] && [ "$1" == "-compile-fmt" ]; then build_fmt;fi
+
+if [ -z $FMTBUILD ]; then echo "fmtlib is not built"
+else
+	compile_opt="g++ filer_trim.cc -o genfilter -I./fmt/include -L./$FMTBUILD/ -lfmt -Wall"
+	if [ ! -z $1 ] && [ "$1" == "-compile" ]; then echo $compile_opt && $($compile_opt)
+	elif [ ! -z $1 ] && [ ! -z $2 ] && [ ! -z $3 ];then
+		ffmpeg -i $1 -filter_complex "$(./genfilter $3)" -map [v] -map [a] $2
+	else
+		echo -e "genfilter <infile> <outfile> <conf_file>"
+	fi
+fi
+
+#	exit;
+#fi

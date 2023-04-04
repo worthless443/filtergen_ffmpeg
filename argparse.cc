@@ -3,7 +3,7 @@
 #include<cstring>
 
 // TODO variadic arguments
-int argparse(int argc, char **argv,char **cfgfn, int *still) {
+int argparse(int argc, char **argv,char **cfgfn, int *still, int *expmtl) {
 	if(argc < 2) {
 			fprintf(stderr, "genfilter: ./genfilter <filename>\n");
 			return 1;
@@ -13,6 +13,8 @@ int argparse(int argc, char **argv,char **cfgfn, int *still) {
 				*cfgfn = argv[++i];
 			else if(0 == strcmp("-n", argv[i])) 
 				*still = atoi(argv[++i]);
+			else if(0 == strcmp("-exp", argv[i])) 
+				*expmtl = 1;
 			else {
 				fprintf(stderr, "genfilter:\'%s\' not understood\n", argv[i]);
 				return 1;

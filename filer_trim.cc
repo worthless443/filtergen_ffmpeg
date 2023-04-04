@@ -80,13 +80,58 @@ std::vector<struct Param> parse_param(std::ifstream &fs, int one=-1) {
 	return s_p;
 } 
 
-extern int argparse(int argc, char **argv,char **cfgfn, int *still);
+std::vector<struct Param> exp_conv_parse_param(std::ifstream &fs, int one=-1) {
+	int cur = 0;
+	std::vector<struct Param> s_p;
+	std::string line;
+	while(std::getline(fs,line)) {
+		std::vector<std::string> s_v;
+		std::stringstream sstm(line);
+		std::string v;
+		struct Param p;
+		p.genaud = one;
+		for(int i=0;std::getline(sstm,v,',');++i) {
+			int count = 0,j,ccount=0;
+			for(unsigned int _=0;_<v.size();++_) {
+				if(*(v.c_str() + _) == '.') ++count;
+				if(*(v.c_str() + _) == ':') ++ccount;
+			}
+			if(ccount>0 || !count) {
+				fprintf(stderr, "expected new experimental format!\n");
+				return s_p;
+			}
+			std::stringstream sstm0(v);
+			std::string raw = "",formatted(""),formatted_final("");
+			for(j=0;std::getline(sstm0,raw,'.');++j) 
+					formatted+=((raw.size() < 2) ? fmt::format("0{}", raw) : raw) + ((j>=count) ? "" : ((j == count - 1) ? "." : "\\:"));				
+			for(int ii=0;ii<3 - count;++ii) formatted_final+="00\\:";
+			formatted_final+=formatted;
+			*((std::string*)&p + i) = formatted_final;
+		}
+		if(one>=0) { 
+			if(cur == one) { 
+				s_p.clear();
+				s_p.push_back(p);
+				return s_p;
+			}
+		}
+		s_p.push_back(p);
+		cur+=1;
+	}
+	return s_p;
+}
+
+extern int argparse(int argc, char **argv,char **cfgfn, int *still, int *expmtl);
 int main(int argc, char **argv) {
 	char *cfgfn = NULL;
-	int still = -1,ret;
-	if((ret=argparse(argc,argv,&cfgfn, &still)>0)) return ret ;
+	int still = -1,ret,expmtl=0;
+	if((ret=argparse(argc,argv,&cfgfn, &still,&expmtl)>0)) return ret ;
 	std::ifstream fs(cfgfn);
-	std::vector<struct Param> v_p =  parse_param(fs,(still>=0) ? still : -1);
+	std::vector<struct Param> v_p =  (expmtl) ? exp_conv_parse_param(fs,(still>=0) ? still : -1) : parse_param(fs,(still>=0) ? still : -1);
+	if(v_p.size()==0) {
+		fprintf(stderr, "nothing to generate\n");
+		return 1;
+	}
 	std::vector<std::string> outstm;
 	std::cout << gen_trim(0,v_p,outstm) << ((still >= 0) ? gen_split(outstm) : gen_concat(outstm)) << "\n";
 	return 0;

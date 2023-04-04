@@ -25,16 +25,22 @@ Compiling fmtlib
 ```
 source ./trim -compile-fmt
 ```
-
 Compiling the small file
 
 ```
 ./trim -compile
 ```
-
 ### Useage 
-
+the `./trim` script does about everything, it can also be directly used to generate trimmed videos and extract frames all with a simple config file
+```bash
+./trim <infile> <outfile> <conf_file> [<colomn from config to extract frame|->]
 ```
-./genfilter <infile> <outfile> <conf_file>
+[if is required to generate pictures for each column from the config file,add `-` at the end of argument list.
 
+if you just want to generate the `filter_complex` string, run the C++ binary 
+```bash
+./genfilter -in <infile> [ -n <column to extract from> ]
 ```
+## Further improvements and additions
+
+* add `overlay` keyword with regular timestamp list to overlay images or text

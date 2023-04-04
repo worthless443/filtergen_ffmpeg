@@ -4,13 +4,12 @@ Your simple trivial C++ program to generate ffmpeg filter strings to save time. 
 
 ### Compiling and setting it up 
 
-It has a `fmtlib` dependency, so either clone it recursively
-
-```
+It has a [fmtlib](https://github.com/fmtlib/fmt) dependency, so either clone it recursively
+```bash
 git clone --recursive https://github.com/worthless443/filtergen_ffmpeg 
 ```
 or 
-```
+```bash
 git clone https://github.com/worthless443/filtergen_ffmpeg && cd filtergen_ffmpeg
 git submodule update --init
 ```
@@ -22,12 +21,12 @@ The `trim` script almost about does everything
 
 Compiling fmtlib
 
-```
+```bash
 source ./trim -compile-fmt
 ```
 Compiling the small file
 
-```
+```bash
 ./trim -compile
 ```
 ### Useage 

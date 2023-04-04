@@ -10,10 +10,20 @@ if [ ! -z $1 ] && [ "$1" == "-compile-fmt" ]; then build_fmt;fi
 
 if [ -z $FMTBUILD ]; then echo "fmtlib is not built"
 else
-	compile_opt="g++ filer_trim.cc -o genfilter -I./fmt/include -L./$FMTBUILD/ -lfmt -Wall"
+	compile_opt="g++ argparse.cc filer_trim.cc -o genfilter -I./fmt/include -L./$FMTBUILD/ -lfmt -Wall"
 	if [ ! -z $1 ] && [ "$1" == "-compile" ]; then echo $compile_opt && $($compile_opt)
 	elif [ ! -z $1 ] && [ ! -z $2 ] && [ ! -z $3 ];then
-		ffmpeg -i $1 -filter_complex "$(./genfilter $3)" -map [v] -map [a] $2
+		if [ ! -z $4 ];then
+			if grep -P '\-' <<< $4 1>/dev/null; then 
+				for i in $(cat $3 | awk '{print NR}');do
+					ffmpeg -i $1 -vframes 1 -filter_complex "$(./genfilter -in $3 -n $(($i-1)))" -map [v] $i$2
+				done
+			else
+				ffmpeg -i $1 -vframes 1 -filter_complex "$(./genfilter -in $3 -n $4)" -map [v] $2
+			fi
+		else
+			ffmpeg -i $1 -filter_complex "$(./genfilter -in $3)" -map [v] -map [a] $2
+		fi
 	else
 		echo -e "genfilter <infile> <outfile> <conf_file>"
 	fi

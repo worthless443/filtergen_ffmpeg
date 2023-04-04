@@ -6,6 +6,10 @@ build_fmt() {
 	cmake -S fmt/ -B $FMTBUILD
 	make -C $FMTBUILD
 }
+i=2
+DIR=$(awk -F"/" '{if(NF>1) for(i=1;i<NF-1;++i) printf "%s/", $i;printf "\n"}' <<< $(echo $2/))
+FN=$(awk -F"/" '{print $NF}' <<< $2)
+
 if [ ! -z $1 ] && [ "$1" == "-compile-fmt" ]; then build_fmt;fi
 
 if [ -z $FMTBUILD ]; then echo "fmtlib is not built"
@@ -16,7 +20,7 @@ else
 		if [ ! -z $4 ];then
 			if grep -P '\-' <<< $4 1>/dev/null; then 
 				for i in $(cat $3 | awk '{print NR}');do
-					ffmpeg -i $1 -vframes 1 -filter_complex "$(./genfilter -in $3 -n $(($i-1)))" -map [v] $i$2
+					ffmpeg -i $1 -vframes 1 -filter_complex "$(./genfilter -in $3 -n $(($i-1)))" -map [v] $DIR$i$FN
 				done
 			else
 				ffmpeg -i $1 -vframes 1 -filter_complex "$(./genfilter -in $3 -n $4)" -map [v] $2
@@ -25,7 +29,7 @@ else
 			ffmpeg -i $1 -filter_complex "$(./genfilter -in $3)" -map [v] -map [a] $2
 		fi
 	else
-		echo -e "genfilter <infile> <outfile> <conf_file>"
+		echo -e "./trim <infile> <outfile> <conf_file> [<column from where the picture should be taken>|-]"
 	fi
 fi
 

@@ -14,6 +14,7 @@
 
 struct Param {
 	std::string s,e;
+	int genaud;
 };
 
 std::string join(std::vector<std::string> svec, std::string by = "") {
@@ -27,14 +28,14 @@ std::string join(std::vector<std::string> svec, std::string by = "") {
 std::string gen_trim(int vid, std::vector<struct Param> v_p,std::vector<std::string> &out_streams ) {
 	std::string con = "";
 	for(unsigned int i=0;i<v_p.size();++i) {
-		short o0 = 'a' + i;
-		short o1 = 'a' + v_p.size() + i;
-		auto vout = fmt::format("[v{}]",(char*)&o0);
-		auto aout = fmt::format("[a{}]",(char*)&o1);
-		con+=fmt::format(VTRIM,fmt::format("[v:{}]", vid), v_p[i].s, v_p[i].e,vout) + ";";
-		con+=fmt::format(ATRIM,fmt::format("[a:{}]", vid), v_p[i].s, v_p[i].e,aout) + (((unsigned)i == v_p.size() - 1) ? "" : ";");
+		auto vout = fmt::format("[v{}]",i);
+		auto aout = fmt::format("[a{}]",i);
+		con+=fmt::format(VTRIM,fmt::format("[v:{}]", vid), v_p[i].s, v_p[i].e,vout) + ((v_p[i].genaud>=0) ? (((unsigned)i == v_p.size() - 1) ? "" : ";") : ";" );
+		if(v_p[i].genaud<0)
+			con+=fmt::format(ATRIM,fmt::format("[a:{}]", vid), v_p[i].s, v_p[i].e,aout) + (((unsigned)i == v_p.size() - 1) ? "" : ";");
 		out_streams.push_back(vout);
-		out_streams.push_back(aout);
+		if(v_p[i].genaud<0)
+			out_streams.push_back(aout);
 	}
 	return con;
 }
@@ -44,7 +45,18 @@ std::string gen_concat(std::vector<std::string> outstm) {
 	
 }
 
-std::vector<struct Param> parse_param(std::ifstream &fs) {
+std::string gen_split(std::vector<std::string> outstm) {
+	std::string con(";");
+	const char *format = "{} split [{}]";
+	for(size_t i =0;i<outstm.size();++i) {
+		char out = *(outstm[i].c_str() + 1);
+		con+=fmt::format(format,outstm[i],std::string(&out)) + ((i < outstm.size() - 1) ? ";" : "");
+	}
+	return con;
+}
+
+std::vector<struct Param> parse_param(std::ifstream &fs, int one=-1) {
+	int cur = 0;
 	std::vector<struct Param> s_p;
 	std::string line;
 	while(std::getline(fs,line)) {
@@ -52,23 +64,30 @@ std::vector<struct Param> parse_param(std::ifstream &fs) {
 		std::stringstream sstm(line);
 		std::string v;
 		struct Param p;
+		p.genaud = one;
 		for(int i=0;std::getline(sstm,v,',');++i)
 			*((std::string*)&p + i) = v;
-
+		if(one>=0) { 
+			if(cur == one) { 
+				s_p.clear();
+				s_p.push_back(p);
+				return s_p;
+			}
+		}
 		s_p.push_back(p);
+		cur+=1;
 	}
 	return s_p;
 } 
 
+extern int argparse(int argc, char **argv,char **cfgfn, int *still);
 int main(int argc, char **argv) {
 	char *cfgfn = NULL;
-	if(argc < 2)
-		cfgfn = (char*)"nigconf";
-	else 
-		cfgfn = *(argv + 1);
+	int still = -1,ret;
+	if((ret=argparse(argc,argv,&cfgfn, &still)>0)) return ret ;
 	std::ifstream fs(cfgfn);
-	std::vector<struct Param> v_p =  parse_param(fs);
+	std::vector<struct Param> v_p =  parse_param(fs,(still>=0) ? still : -1);
 	std::vector<std::string> outstm;
-	std::cout << gen_trim(0,v_p,outstm) << gen_concat(outstm)  << "\n";
+	std::cout << gen_trim(0,v_p,outstm) << ((still >= 0) ? gen_split(outstm) : gen_concat(outstm)) << "\n";
 	return 0;
 }

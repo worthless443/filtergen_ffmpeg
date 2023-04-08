@@ -42,4 +42,4 @@ if you just want to generate the `filter_complex` string, run the C++ binary
 ```
 ## Further improvements and additions
 
-* add `overlay` keyword with regular timestamp list to overlay images or text
+[x] - add `overlay` keyword with regular timestamp list to overlay images or text

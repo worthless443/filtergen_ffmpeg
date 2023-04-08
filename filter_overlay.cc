@@ -43,7 +43,7 @@ std::string between_format(std::string lstream) {
 }
 
 std::string get_format(int stm, std::string _fn) {
-	const char *res = "100:100";
+	const char *res = "100:60";
 	std::string fn = between_format(_fn);
 	std::string fn_fn = fmt::format(OVERLAY,std::string("[0:v]") + fmt::format("[{}:v]",stm),res,fn,fmt::format("[vo{}]",++o_n));
 	return fn_fn;

@@ -164,6 +164,7 @@ std::vector<struct Param> exp_conv_parse_param(std::ifstream &fs, int one=-1) {
 extern int argparse(int argc, char **argv,char **cfgfn, int *still, int *expmtl);
 extern std::string get_format(std::ifstream &instm);
 extern struct VConfig parse_file(std::ifstream &in);
+extern struct VConfig parse_file2(std::ifstream &in);
 extern std::string gen_overlay(std::vector<struct Overlay>);
 
 int main(int argc, char **argv) {
@@ -171,7 +172,7 @@ int main(int argc, char **argv) {
 	int still = -1,ret,expmtl=0;
 	if((ret=argparse(argc,argv,&cfgfn, &still,&expmtl)>0)) return ret ;
 	std::ifstream fs(cfgfn);
-	struct VConfig vconf = parse_file(fs);
+	struct VConfig vconf = parse_file2(fs);
 	
 	//std::vector<struct Param> v_p =  (expmtl) ? exp_conv_parse_param(fs,(still>=0) ? still : -1) : parse_param(fs,(still>=0) ? still : -1);
 
@@ -179,6 +180,8 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "nothing to generate\n");
 		return 1;
 	}
+	if(vconf.err)
+		return 1;
 	if(vconf.o)
 		std::cout << gen_overlay(vconf.o_v) << ";";
 	std::vector<std::string> outstm;

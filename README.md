@@ -1,6 +1,6 @@
 The Simple Program 
 ------
-Your simple trivial C++ program to generate ffmpeg filter strings to save time. As of this moment it is only limited to trimming. It is done parsing a condig file containting the time stamps of your requirement for the trimming
+A simple trivial C++ program to generate ffmpeg filter strings to save time. As of this moment it is only limited to trimming. It is done parsing a condig file containting the time stamps of your requirement for the trimming
 
 ### Compiling and setting it up 
 
